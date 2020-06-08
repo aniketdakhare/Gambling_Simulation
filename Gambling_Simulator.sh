@@ -14,89 +14,107 @@ total_days=30
 win=0
 loss=0
 total_Won=0
+least_amount=0
 
 declare -A monthly_Stake
 declare -A Daily_collection
 
-function gambling()
+function play()
 {
-        for ((day=1; day<=$total_days; day++))
-        do
-                total_daily_stake=$DAILY_STAKE
+	function gambling()
+	{
+		for ((day=1; day<=$total_days; day++))
+		do
+			total_daily_stake=$DAILY_STAKE
+			while (( $total_daily_stake > $min_limit && $total_daily_stake < $max_limit ))
+			do
+				check=$((RANDOM%2))
+				if [ $check -eq $WON ]
+				then
+					total_daily_stake=$((total_daily_stake+BET))
+				else
+					total_daily_stake=$((total_daily_stake-BET))
+				fi
+			done
+			if [ $total_daily_stake -gt $DAILY_STAKE ]
+			then
+				total_Won=$(( $total_Won+$limit ))
+				monthly_Stake[Day"$day"]="Won 50"
+				Daily_collection[Day"$day"]=$(( total_Won ))
+				((win++))
+			else
+				total_Won=$(( $total_Won-$limit ))
+				monthly_Stake[Day"$day"]="lost 50"
+				((loss++))
+				Daily_collection[Day"$day"]=$(( total_Won ))
+			fi
+			total_stake=$(( $total_stake+$total_daily_stake ))
+		done
+	}
 
-                while (( $total_daily_stake > $min_limit && $total_daily_stake < $max_limit ))
-                do
-                        check=$((RANDOM%2))
+	gambling
 
-                        if [ $check -eq $WON ]
-                        then
-                                total_daily_stake=$((total_daily_stake+BET))
-                        else
-                                total_daily_stake=$((total_daily_stake-BET))
-                        fi
-                done
-
-                if [ $total_daily_stake -gt $DAILY_STAKE ]
-                then
-						total_Won=$(( $total_Won+$limit ))
-                        monthly_Stake[Day"$day"]="Won 50"
-						Daily_collection[Day"$day"]=$(( total_Won ))
-                        ((win++))
-                else
-						total_Won=$(( $total_Won-$limit ))
-                        monthly_Stake[Day"$day"]="lost 50"
-                        ((loss++))
-						Daily_collection[Day"$day"]=$(( total_Won ))
-                fi
-
-                total_stake=$(( $total_stake+$total_daily_stake ))
-        done
-}
-
-gambling
-
-for key in ${!monthly_Stake[@]}
-do
-        echo "$key : ${monthly_Stake[$key]}"
-done
-
-echo "Won $win days by $ $(($win*$limit))"
-echo "Lost $loss days by $ $(($loss*$limit))"
-
-lucky=0
-unlucky=$total_stake
-
-function check_luck()
-{
-	for key in ${!Daily_collection[@]}
+	for key in ${!monthly_Stake[@]}
 	do
-        	if [ ${Daily_collection[$key]} -eq $lucky ]
-        	then
-                	echo "$key is luckiest day with total winning amount $ ${Daily_collection[$key]} "
-        	elif [ ${Daily_collection[$key]} -eq $unlucky ]
-        	then
-                	echo "$key is unluckiest day with amount $ ${Daily_collection[$key]} "
-        	fi
+		echo "$key : ${monthly_Stake[$key]}"
 	done
 
-}
+	echo "Won $win days by $ $(($win*$limit))"
+	echo "Lost $loss days by $ $(($loss*$limit))"
 
-function lucky_unluky_day()
-{
-	for key in ${!Daily_collection[@]}
-	do
-		if [ ${Daily_collection[$key]} -gt $lucky ]
+	lucky=0
+	unlucky=$total_stake
+
+	function check_luck()
+	{
+		for key in ${!Daily_collection[@]}
+		do
+			if [ ${Daily_collection[$key]} -eq $lucky ]
+			then
+				echo "$key is luckiest day with total winning amount $ ${Daily_collection[$key]} "
+			elif [ ${Daily_collection[$key]} -eq $unlucky ]
+			then
+				echo "$key is unluckiest day with amount $ ${Daily_collection[$key]} "
+			fi
+		done
+
+	}
+
+	function lucky_unluky_day()
+	{
+		for key in ${!Daily_collection[@]}
+		do
+			if [ ${Daily_collection[$key]} -gt $lucky ]
+			then
+				lucky=${Daily_collection[$key]}
+			fi
+
+			if [ ${Daily_collection[$key]} -lt $unlucky ]
+			then
+				unlucky=${Daily_collection[$key]}
+				fi
+		done
+		check_luck
+	}
+	lucky_unluky_day
+
+	echo "Total winning amount : $ $total_Won"
+	echo "Total balance Stake is : $ $total_stake"
+
+
+	if [ $total_Won -gt $least_amount ]
+	then
+		echo -e "You won the game for this month !!! \nDo you want to play again ? (Y/N)"
+		read permission
+		if [ $permission == "Y" ]
 		then
-			lucky=${Daily_collection[$key]}
+			play
+		else
+			echo "Thank You"
 		fi
-
-		if [ ${Daily_collection[$key]} -lt $unlucky ]
-		then
-			unlucky=${Daily_collection[$key]}
-		fi
-	done
-	check_luck
+	else
+		echo -e "Sorry you lost, you can't play further. \nThank You. "
+	fi
 }
-lucky_unluky_day
+play
 
-echo "Total balance Stake is : $ $total_stake"
