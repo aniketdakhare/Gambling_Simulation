@@ -13,8 +13,11 @@ total_stake=0
 total_days=30
 win=0
 loss=0
+total_Won=0
 
 declare -A monthly_Stake
+declare -A Daily_collection
+
 function gambling()
 {
         for ((day=1; day<=$total_days; day++))
@@ -35,11 +38,15 @@ function gambling()
 
                 if [ $total_daily_stake -gt $DAILY_STAKE ]
                 then
-			monthly_Stake[Day"$day"]=$( echo "Won 50" )
-			((win++))
+						total_Won=$(( $total_Won+$limit ))
+                        monthly_Stake[Day"$day"]="Won 50"
+						Daily_collection[Day"$day"]=$(( total_Won ))
+                        ((win++))
                 else
-                        monthly_Stake[Day"$day"]=$( echo "lost 50" )
-			((loss++))
+						total_Won=$(( $total_Won-$limit ))
+                        monthly_Stake[Day"$day"]="lost 50"
+                        ((loss++))
+						Daily_collection[Day"$day"]=$(( total_Won ))
                 fi
 
                 total_stake=$(( $total_stake+$total_daily_stake ))
@@ -50,10 +57,46 @@ gambling
 
 for key in ${!monthly_Stake[@]}
 do
-	echo "$key : ${monthly_Stake[$key]}"
+        echo "$key : ${monthly_Stake[$key]}"
 done
 
 echo "Won $win days by $ $(($win*$limit))"
 echo "Lost $loss days by $ $(($loss*$limit))"
+
+lucky=0
+unlucky=$total_stake
+
+function check_luck()
+{
+	for key in ${!Daily_collection[@]}
+	do
+        	if [ ${Daily_collection[$key]} -eq $lucky ]
+        	then
+                	echo "$key is luckiest day with total winning amount $ ${Daily_collection[$key]} "
+        	elif [ ${Daily_collection[$key]} -eq $unlucky ]
+        	then
+                	echo "$key is unluckiest day with amount $ ${Daily_collection[$key]} "
+        	fi
+	done
+
+}
+
+function lucky_unluky_day()
+{
+	for key in ${!Daily_collection[@]}
+	do
+		if [ ${Daily_collection[$key]} -gt $lucky ]
+		then
+			lucky=${Daily_collection[$key]}
+		fi
+
+		if [ ${Daily_collection[$key]} -lt $unlucky ]
+		then
+			unlucky=${Daily_collection[$key]}
+		fi
+	done
+	check_luck
+}
+lucky_unluky_day
 
 echo "Total balance Stake is : $ $total_stake"
