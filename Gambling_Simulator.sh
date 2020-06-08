@@ -2,7 +2,23 @@
 
 echo "Welcome to Gambling Simulator Program "
 
-Daily_Stake=100
-Bet=1
+DAILY_STAKE=100
+BET=1
+WON=1
 
-echo "Daily_Stake is $ $Daily_Stake and Single Bet is of $ $Bet"
+function gambling()
+{
+	check=$((RANDOM%2))
+	if [ $check -eq $WON ]
+	then
+		DAILY_STAKE=$(( DAILY_STAKE+BET ))
+		echo "Won"
+        else
+                DAILY_STAKE=$(( DAILY_STAKE-BET ))
+                echo "Lost"
+        fi
+}
+
+gambling
+
+echo "Total Stake is : $DAILY_STAKE"
