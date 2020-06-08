@@ -38,15 +38,15 @@ function gambling()
 
                 if [ $total_daily_stake -gt $DAILY_STAKE ]
                 then
-						total_Won=$(( $total_Won+$limit ))
+			total_Won=$(( $total_Won+$limit ))
                         monthly_Stake[Day"$day"]="Won 50"
-						Daily_collection[Day"$day"]=$(( total_Won ))
+			Daily_collection[Day"$day"]=$(( total_Won ))
                         ((win++))
                 else
-						total_Won=$(( $total_Won-$limit ))
+			total_Won=$(( $total_Won-$limit ))
                         monthly_Stake[Day"$day"]="lost 50"
                         ((loss++))
-						Daily_collection[Day"$day"]=$(( total_Won ))
+			Daily_collection[Day"$day"]=$(( total_Won ))
                 fi
 
                 total_stake=$(( $total_stake+$total_daily_stake ))
