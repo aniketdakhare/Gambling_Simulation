@@ -9,23 +9,38 @@ percent=50
 limit=$(( $percent*$DAILY_STAKE/100 ))
 max_limit=$(( $DAILY_STAKE+$limit ))
 min_limit=$(( $DAILY_STAKE-$limit ))
-total_stake=$DAILY_STAKE
+total_stake=0
+total_days=20
 
 function gambling()
 {
-	while (( $total_stake > $min_limit && $total_stake < $max_limit ))
+	for ((day=1; day<=$total_days; day++))
 	do
-		check=$((RANDOM%2))
-		if [ $check -eq $WON ]
+		total_daily_stake=$DAILY_STAKE
+
+	        while (( $total_daily_stake > $min_limit && $total_daily_stake < $max_limit ))
+        	do
+                	check=$((RANDOM%2))
+
+                	if [ $check -eq $WON ]
+                	then
+                        	total_daily_stake=$((total_daily_stake+BET))
+                	else
+                        	total_daily_stake=$((total_daily_stake-BET))
+                	fi
+        	done
+
+        	if [ $total_daily_stake -gt $DAILY_STAKE ]
 		then
-			total_stake=$((total_stake+BET))
-        	else
-                	total_stake=$((total_stake-BET))
-        	fi
+			echo "Won on Day$day with total amount $ $total_daily_stake "
+		else
+			echo "Lost on Day$day with total amount $ $total_daily_stake "
+		fi
+
+	        total_stake=$(( $total_stake+$total_daily_stake ))
 	done
-	echo "Done for the day..."
 }
 
 gambling
 
-echo "Total Stake is : $total_stake"
+echo "Total balance Stake is : $ $total_stake"
